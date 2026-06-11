@@ -13,7 +13,6 @@ interface FileItem {
 
 export default function Home() {
   const [files, setFiles] = useState<FileItem[]>([]);
-  const [ipAddress, setIpAddress] = useState<string>('');
   const [uploadUrl, setUploadUrl] = useState<string>('');
   const socketRef = useRef<any>(null);
 
@@ -23,9 +22,9 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         if (data.ip) {
-          setIpAddress(data.ip);
-          // Assuming port 3000
-          const url = `http://${data.ip}:3000/upload`;
+          const protocol = window.location.protocol || 'http:';
+          const port = window.location.port ? `:${window.location.port}` : '';
+          const url = `${protocol}//${data.ip}${port}/upload`;
           setUploadUrl(url);
         }
       })
@@ -114,6 +113,17 @@ export default function Home() {
                   controls 
                   className="w-full h-full object-cover" 
                 />
+              ) : file.type.startsWith('audio') ? (
+                <div className="w-full h-full p-3 bg-gradient-to-br from-slate-900 to-slate-700 flex flex-col justify-between">
+                  <div className="flex items-center gap-2 text-white">
+                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18.25a4.75 4.75 0 01-4.75-4.75V8a4.75 4.75 0 119.5 0v5.5A4.75 4.75 0 0112 18.25z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 13.5a7 7 0 01-14 0M12 20.5v2.5" />
+                    </svg>
+                    <p className="text-xs truncate">{file.name}</p>
+                  </div>
+                  <audio src={file.url} controls className="w-full" preload="metadata" />
+                </div>
               ) : (
                 <img 
                   src={file.url} 
@@ -124,7 +134,7 @@ export default function Home() {
               )}
               
               {/* Overlay Actions */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity flex flex-col justify-end p-4">
                  <p className="text-white text-xs truncate mb-2 font-medium">{file.name}</p>
                  <a 
                    href={file.url} 
